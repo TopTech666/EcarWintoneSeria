@@ -36,26 +36,9 @@ import java.util.List;
 public final class ViewfinderView extends View {
 
 
-    private Bitmap resultBitmap;
-    private final int maskColor;
-    private final int resultColor;
-    private final int laserColor;
-    private final int resultPointColor;
-    private int scannerAlpha;
-    private List<ResultPoint> possibleResultPoints;
-    private List<ResultPoint> lastPossibleResultPoints;
 
     // This constructor is used when the class is built from an XML resource.
     public ViewfinderView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        // Initialize these once for performance rather than calling them every time in onDraw().
-        maskColor = Color.TRANSPARENT;
-        resultColor = Color.TRANSPARENT;
-        laserColor = Color.TRANSPARENT;
-        resultPointColor = Color.TRANSPARENT;
-        scannerAlpha = 0;
-        possibleResultPoints = new ArrayList<>(5);
-        lastPossibleResultPoints = null;
     }
 }

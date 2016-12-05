@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             protected void onCheckNgisFailed(Context context, InvalidException commonException) {
-                super.onCheckNgisFailed(context, commonException);
+//                super.onCheckNgisFailed(context, commonException);
 
                 //此接口为蜜蜂接口，所以sign值配对不正确，需要重新拿到对象检查是否为空
                 if(commonException.getResObj() != null){

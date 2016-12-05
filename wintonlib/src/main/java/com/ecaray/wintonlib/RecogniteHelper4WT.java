@@ -25,6 +25,7 @@ package com.ecaray.wintonlib;/*
 import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.hardware.Camera;
@@ -33,7 +34,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.ecaray.wintonlib.util.ToastUtils;
 import com.wintone.plateid.PlateCfgParameter;
 import com.wintone.plateid.RecogService;
 
@@ -74,8 +74,6 @@ public class RecogniteHelper4WT {
                 String[] str = {"" + iInitPlateIDSDK};
                 getResult(str, null, null, null);
             }
-            // recogBinder.setRecogArgu(recogPicPath, imageformat,
-            // bGetVersion, bVertFlip, bDwordAligned);
             PlateCfgParameter cfgparameter = new PlateCfgParameter();
             cfgparameter.armpolice = 4;
             cfgparameter.armpolice2 = 16;
@@ -159,7 +157,7 @@ public class RecogniteHelper4WT {
     /**
      * 回调数据
      */
-    public void getResult(String[] fieldValue, Camera camera, byte[] data,OnResult onResult) {
+    public void getResult(String[] fieldValue, Camera camera, byte[] data, OnResult onResult) {
         if (mCamera != camera) {
             mCamera = camera;
         }
@@ -320,9 +318,23 @@ public class RecogniteHelper4WT {
 
                 break;
             default:
-                ToastUtils.showShort(context, context.getString(R.string.recognize_result) + nRet + "\n");
+                showShort(context, context.getString(R.string.recognize_result) + nRet + "\n");
 
                 break;
         }
+    }
+    public static boolean isShowMessage = true;
+
+    /**
+     * 短时间显示Toast
+     */
+    public static void showShort(Context context, String message)
+    {
+        if (isShowMessage)
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
+    public interface OnResult {
+        void onGeted(String fileName, String number);  //获取了结果
+        String saveImage(byte[] data);
     }
 }

@@ -23,7 +23,6 @@ import com.ecaray.wintonedemo.R;
 import com.ecaray.wintonedemo.util.LogUtils;
 import com.ecaray.wintonedemo.util.SPKeyUtils;
 import com.ecaray.wintonedemo.util.SPUtils;
-import com.ecaray.wintonlib.OnResult;
 import com.ecaray.wintonlib.RecogniteHelper4WT;
 import com.wintone.plateid.PlateRecognitionParameter;
 import com.wintone.plateid.RecogService;
@@ -33,7 +32,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import butterknife.Bind;
-import rx.Observable;
 
 
 /**
@@ -53,7 +51,7 @@ import rx.Observable;
  * <p>
  * ===============================================
  */
-public class CameraActivity extends BaseActivity implements Camera.PreviewCallback{
+public class CameraActivity extends BaseActivity implements Camera.PreviewCallback {
 
     @Bind(R.id.sv_camera)
     SurfaceView sv_camera;
@@ -121,8 +119,6 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     private int mCameraPosition = 1;
     //拍照图片数据
     private byte[] mPicData = null;
-    //从哪个界面跳转过来
-    private String mFrom;
     //车牌号码
     private String mCarPlate;
     //识别帮助类
@@ -132,7 +128,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     private boolean IsAction = false;
 
     //间隔两次识别一次
-    private int mNum = -1;
+//    private int mNum = -1;
     private int nRet = -1;
     //声音
     private SoundPool mSoundPool;
@@ -148,7 +144,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     @Override
     protected void initData() {
         //文通序列号获取
-        mSerialNum = (String) SPUtils.get(SPKeyUtils.s_SERIAL_NUM,"");
+        mSerialNum = (String) SPUtils.get(SPKeyUtils.s_SERIAL_NUM, "");
         LogUtils.i("文通序列号", mSerialNum);
         //公司识别
         initSound();
@@ -177,54 +173,87 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     @Override
     public void setOnInteractListener() {
         //转换前后置摄像头
-        iv_camera_switch.setOnClickListener(v -> changeCamera());
+        iv_camera_switch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                changeCamera();
+            }
+        });
 
         //点击开启关闭闪光灯
-        btn_flashMode.setOnClickListener(v -> openOrCloseFlash());
+        btn_flashMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openOrCloseFlash();
+            }
+        });
 
         //拍照
-        btn_takePic.setOnClickListener(v -> {
+        btn_takePic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-            if(IsAction){
-                return;
+                if (IsAction) {
+                    return;
+                }
+                takePicture();
             }
-            takePicture();
         });
 
         //保存图片
-        btn_savePic.setOnClickListener(v -> {
-            savePic();
-            btn_savePic.setClickable(false);
-            btn_savePic.setEnabled(false);
+        btn_savePic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                savePic();
+                btn_savePic.setClickable(false);
+                btn_savePic.setEnabled(false);
+            }
         });
 
         //取消当前所拍照片
-        btn_cancel.setOnClickListener(v -> {
-            //隐藏对应Layout
-            IsAction = false;
-            ll_camera_aftertake.setVisibility(View.GONE);
-            ll_camera_onpreview.setVisibility(View.VISIBLE);
-            iv_camera_switch.setVisibility(View.VISIBLE);
-            if(mCamera != null){
-                mCamera.startPreview();
-                mCamera.setPreviewCallback(CameraActivity.this);
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //隐藏对应Layout
+                IsAction = false;
+                ll_camera_aftertake.setVisibility(View.GONE);
+                ll_camera_onpreview.setVisibility(View.VISIBLE);
+                iv_camera_switch.setVisibility(View.VISIBLE);
+                if (mCamera != null) {
+                    mCamera.startPreview();
+                    mCamera.setPreviewCallback(CameraActivity.this);
+                }
             }
         });
 
         //回退按钮
-        btn_go_back.setOnClickListener(v -> finish());
+        btn_go_back.setOnClickListener(new View.OnClickListener() {
+                                           @Override
+                                           public void onClick(View view) {
+                                               finish();
 
-        //点击背景可聚焦
-        background_fl.setOnClickListener(v -> {
-            if(mCamera == null)
-                return;
+                                               //点击背景可聚焦
+                                               background_fl.setOnClickListener(new View.OnClickListener() {
+                                                   @Override
+                                                   public void onClick(View view) {
+                                                       if (mCamera == null)
+                                                           return;
 
-            mCamera.autoFocus((success, camera) -> {
-                if(success){
-                    initCamera();//实现相机的参数初始化
-                }
-            });
-        });
+                                                       mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                                                           @Override
+                                                           public void onAutoFocus(boolean success, Camera camera) {
+                                                               if (success) {
+                                                                   initCamera();//实现相机的参数初始化
+                                                               }
+                                                           }
+
+                                                       });
+                                                   }
+                                               });
+                                           }
+                                       }
+
+        );
     }
 
     SurfaceHolder.Callback mCallback = new SurfaceHolder.Callback() {
@@ -236,7 +265,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
 
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
-            if(null==mCamera){
+            if (null == mCamera) {
                 mCamera = Camera.open();
                 //文通识别服务绑定
                 mRecogHelper = RecogniteHelper4WT.getInstance(CameraActivity.this, mCamera);
@@ -252,51 +281,56 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
         }
 
         @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height){
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             if (holder == null) {
                 return;
             }
             //实现自动对焦
-            if(mCamera != null){
-                mCamera.autoFocus((success, camera) -> {
-                    if(success){
-                        initCamera();//实现相机的参数初始化
+            if (mCamera != null) {
+                mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                    @Override
+                    public void onAutoFocus(boolean success, Camera camera) {
+                        if (success) {
+                            initCamera();//实现相机的参数初始化
+                        }
                     }
+
                 });
             }
         }
     };
 
-
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
 
         //判断是否为拍照，IsAction为true则说明是拍照，则停止预览
-        if(IsAction){
+        if (IsAction) {
             IsAction = false;
             mCamera.stopPreview();
             useWTRecognition(data, camera);
 
-        }else{
-            mNum++;
-            if(mNum == 1){
-                mNum = -1;
+        } else {
+//            mNum++;
+//            if (mNum == 1) {
+//                mNum = -1;
                 useWTRecognition(data, camera);
-            }
+//            }
         }
     }
 
+
     /**
      * 文通识别
-     * @param data      字节数组(图片)
-     * @param camera    照相机
+     *
+     * @param data   字节数组(图片)
+     * @param camera 照相机
      */
     private void useWTRecognition(byte[] data, Camera camera) {
-        if(mRecogHelper.isServiceIsConnected()){
+        if (mRecogHelper.isServiceIsConnected()) {
             nRet = mRecogHelper.getRecogBinder() != null ? mRecogHelper.getRecogBinder().getnRet() : nRet;
 
             int initPlateIDSDK = mRecogHelper.getInitPlateIDSDK();
-            if(initPlateIDSDK == 0){
+            if (initPlateIDSDK == 0) {
 
                 //识别参数设置
                 PlateRecognitionParameter mPlateRecParam = new PlateRecognitionParameter();
@@ -313,27 +347,26 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
                 mPlateRecParam.plateIDCfg.top = 0;
                 mPlateRecParam.plateIDCfg.bottom = 0;
 
-                Log.d(TAG,mPlateRecParam.devCode);
+                Log.d(TAG, mPlateRecParam.devCode);
 
                 //识别开始
                 RecogService.MyBinder lBinder = mRecogHelper.getRecogBinder();
                 String[] mFieldValue = lBinder.doRecogDetail(mPlateRecParam);
                 if (nRet != 0) {
                     String[] str = {"" + nRet};
-                    mRecogHelper.getResult(str, camera, data,new Geted());
+                    mRecogHelper.getResult(str, camera, data, (RecogniteHelper4WT.OnResult) new Geted());
                 } else {
-                    mRecogHelper.getResult(mFieldValue, camera, data, new Geted());
+                    mRecogHelper.getResult(mFieldValue, camera, data, (RecogniteHelper4WT.OnResult) new Geted());
                 }
             }
         }
     }
 
     /**
-     *相机参数的初始化设置
+     * 相机参数的初始化设置
      */
-    private void initCamera()
-    {
-        mParameters=mCamera.getParameters();
+    private void initCamera() {
+        mParameters = mCamera.getParameters();
         mParameters.setPictureFormat(ImageFormat.JPEG);
         mParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
         setCameraSize(mParameters);
@@ -341,7 +374,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
 //        // 设置JPG照片的质量
         mParameters.setJpegQuality(85);
 
-        setDisplay(mParameters,mCamera);
+        setDisplay(mParameters, mCamera);
         mCamera.setParameters(mParameters);
         mCamera.setPreviewCallback(this);
 //        camera.cancelAutoFocus();// 2如果要实现连续的自动对焦，这一句必须加上
@@ -350,7 +383,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     /**
      * 拍照
      */
-    private void takePicture(){
+    private void takePicture() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
             mSoundPool.play(mSound, 1, 1, 0, 0, 1);
         }
@@ -361,29 +394,27 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     }
 
     /**
-     *控制图像的正确显示方向
+     * 控制图像的正确显示方向
      */
-    private void setDisplay(Camera.Parameters parameters,Camera camera) {
-        if (Integer.parseInt(Build.VERSION.SDK) >= 8){
-            setDisplayOrientation(camera,90);
-        }
-        else{
+    private void setDisplay(Camera.Parameters parameters, Camera camera) {
+        if (Integer.parseInt(Build.VERSION.SDK) >= 8) {
+            setDisplayOrientation(camera, 90);
+        } else {
             parameters.setRotation(90);
         }
     }
 
     /**
-     *    实现的图像的正确显示
+     * 实现的图像的正确显示
      */
     private void setDisplayOrientation(Camera camera, int i) {
         Method downPolymorphic;
-        try{
-            downPolymorphic=camera.getClass().getMethod("setDisplayOrientation", int.class);
-            if(downPolymorphic!=null) {
+        try {
+            downPolymorphic = camera.getClass().getMethod("setDisplayOrientation", int.class);
+            if (downPolymorphic != null) {
                 downPolymorphic.invoke(camera, i);
             }
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -392,7 +423,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
      * 保存图片
      */
     private void savePic() {
-        if(mPicData != null){
+        if (mPicData != null) {
             Toast.makeText(this, mCarPlate, Toast.LENGTH_LONG).show();
             finish();
         }
@@ -401,8 +432,8 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     /**
      * 释放资源
      */
-    public void releaseResource(){
-        if(mCamera != null){
+    public void releaseResource() {
+        if (mCamera != null) {
             mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
             mCamera.release();
@@ -431,9 +462,9 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
         Camera.CameraInfo lCameraInfo = new Camera.CameraInfo();
         for (int i = 0; i < lCameraCount; i++) {
             Camera.getCameraInfo(i, lCameraInfo);//得到每一个摄像头的信息
-            if(mCameraPosition == 1){
+            if (mCameraPosition == 1) {
                 //转前置摄像头
-                if(lCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT){
+                if (lCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                     closeFlash();
                     mCamera.stopPreview();//停掉原来摄像头的预览
                     mCamera.setPreviewCallback(null);
@@ -451,9 +482,9 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
                     mCamera.setPreviewCallback(this);
                     break;
                 }
-            }else{
+            } else {
                 //转后置摄像头
-                if(lCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK){
+                if (lCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
                     mCamera.stopPreview();
                     mCamera.setPreviewCallback(null);
                     mCamera.release();
@@ -478,20 +509,20 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
      * 打开或者关闭闪光灯
      */
     private void openOrCloseFlash() {
-        if(mCamera != null && mParameters != null){
+        if (mCamera != null && mParameters != null) {
             Camera.Parameters p = mCamera.getParameters();
             String lFlashMode = p.getFlashMode();//获取闪光灯的状态
             //闪光灯状态转换
-            if(lFlashMode.equals(Camera.Parameters.FLASH_MODE_TORCH)){
+            if (lFlashMode.equals(Camera.Parameters.FLASH_MODE_TORCH)) {
                 closeFlash();
-            }else if(lFlashMode.equals(Camera.Parameters.FLASH_MODE_OFF)){
+            } else if (lFlashMode.equals(Camera.Parameters.FLASH_MODE_OFF)) {
                 openFlash();
             }
         }
     }
 
     /**
-     *    关闭闪光灯
+     * 关闭闪光灯
      */
     private void closeFlash() {
         mParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
@@ -502,7 +533,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     }
 
     /**
-     *    打开闪光灯
+     * 打开闪光灯
      */
     private void openFlash() {
         mParameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
@@ -516,7 +547,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     /**
      * 获取车牌号后的回调类
      */
-    class Geted implements OnResult {
+    class Geted implements RecogniteHelper4WT.OnResult {
 
         @Override
         public void onGeted(String fileName, String carPlate) {
@@ -544,7 +575,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     private int mPreHeight;
 
     /**
-     *    设置预览扫描区域尺寸
+     * 设置预览扫描区域尺寸
      */
     private void setCameraSize(Camera.Parameters parameters) {
         //获取手机支持分辨率

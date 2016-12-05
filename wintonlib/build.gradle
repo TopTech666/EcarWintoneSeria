@@ -16,7 +16,25 @@ android {
         }
     }
 
+    sourceSets {
 
+        main {
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs = ['src/main/java']
+            resources.srcDirs = ['src/main/java']
+            aidl.srcDirs = ['src/main/java']
+            renderscript.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res', 'src/main/res/layouts/park']
+            //默认配置的目录
+            assets.srcDirs = ['src/main/assets']
+            jniLibs.srcDirs = ['libs']
+        }
+
+        // Move the tests to tests/java, tests/res, etc...
+        instrumentTest.setRoot('tests')
+        debug.setRoot('build-types/debug')
+        release.setRoot('build-types/release')
+    }
 
     buildTypes {
 //        release {
@@ -40,11 +58,4 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    //文通识别
-    compile files('libs/android_auth.jar')
-    compile files('libs/bcprov-ext-jdk15-146.jar')
-    compile files('libs/ksoap2-android-assembly-2.4-jar-with-dependencies.jar')
-    compile files('libs/pki.jar')
-    compile files('libs/plate_id_sdk.jar')
 }
