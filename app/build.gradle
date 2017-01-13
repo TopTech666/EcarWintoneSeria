@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.ecaray.wintonedemo"
-        minSdkVersion 14
+        minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -17,6 +17,7 @@ android {
 //            enabled true
 //        }
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -48,6 +49,6 @@ dependencies {
     //文通库
     //butterKnife
     compile 'com.jakewharton:butterknife:7.0.1'
-    compile 'com.github.goEcar:EcarWintoneTFcard:1.0.0'
-
+    //    compile 'com.github.goEcar:EcarWintoneTFcard:1.0.0'
+    compile project(':wintonlib')
 }

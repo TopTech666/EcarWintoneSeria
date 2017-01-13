@@ -69,7 +69,6 @@ public class RecogniteHelper4WT {
             recogBinder = (RecogService.MyBinder) service;
             iInitPlateIDSDK = recogBinder.getInitPlateIDSDK();
             if (iInitPlateIDSDK != 0) {
-
                 nRet = iInitPlateIDSDK;
                 String[] str = {"" + iInitPlateIDSDK};
                 getResult(str, null, null, null);
@@ -93,7 +92,6 @@ public class RecogniteHelper4WT {
             int lBVertFlip = 0;
             int lBDwordAligned = 1;
             recogBinder.setRecogArgu(cfgparameter, lImageformat, lBVertFlip, lBDwordAligned);
-
         }
     };
 

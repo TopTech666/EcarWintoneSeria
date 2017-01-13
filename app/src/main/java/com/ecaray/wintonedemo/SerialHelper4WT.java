@@ -3,8 +3,8 @@ package com.ecaray.wintonedemo;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.ecaray.wintonedemo.util.SPKeyUtils;
-import com.ecaray.wintonedemo.util.SPUtils;
+import com.ecaray.wintonlib.util.SPKeyUtils;
+import com.ecaray.wintonlib.util.SPUtils;
 
 
 /**
@@ -45,7 +45,7 @@ public class SerialHelper4WT {
      * @param serial 回调函数
      */
     public void getSerialNum(SerialI serial){
-        String lSerialNum = (String) SPUtils.get(SPKeyUtils.s_SERIAL_NUM,"");
+        String lSerialNum =SPKeyUtils.getSeriaNum(mContext);
         if(!TextUtils.isEmpty(lSerialNum)){
             return;
         }
@@ -53,7 +53,7 @@ public class SerialHelper4WT {
         if (TextUtils.isEmpty(lSerialNum)) {
             serial.getSerial();
         } else {
-            SPUtils.put(SPKeyUtils.s_SERIAL_NUM, lSerialNum);
+            SPKeyUtils.saveSeriaNum(mContext,lSerialNum);
         }
 
     }

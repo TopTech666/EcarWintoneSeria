@@ -21,9 +21,9 @@ import android.widget.Toast;
 import com.ecaray.wintonedemo.BaseActivity;
 import com.ecaray.wintonedemo.R;
 import com.ecaray.wintonedemo.util.LogUtils;
-import com.ecaray.wintonedemo.util.SPKeyUtils;
-import com.ecaray.wintonedemo.util.SPUtils;
 import com.ecaray.wintonlib.RecogniteHelper4WT;
+import com.ecaray.wintonlib.util.SPKeyUtils;
+import com.ecaray.wintonlib.util.SPUtils;
 import com.wintone.plateid.PlateRecognitionParameter;
 import com.wintone.plateid.RecogService;
 
@@ -144,7 +144,7 @@ public class CameraActivity extends BaseActivity implements Camera.PreviewCallba
     @Override
     protected void initData() {
         //文通序列号获取
-        mSerialNum = (String) SPUtils.get(SPKeyUtils.s_SERIAL_NUM, "");
+        mSerialNum =SPKeyUtils.getSeriaNum(this);
         LogUtils.i("文通序列号", mSerialNum);
         //公司识别
         initSound();

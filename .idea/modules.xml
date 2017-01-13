@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/EcarWintone.iml" filepath="$PROJECT_DIR$/EcarWintone.iml" />
+      <module fileurl="file://$PROJECT_DIR$/EcarWintoneSeria.iml" filepath="$PROJECT_DIR$/EcarWintoneSeria.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/wintonlib/wintonlib.iml" filepath="$PROJECT_DIR$/wintonlib/wintonlib.iml" />
     </modules>
