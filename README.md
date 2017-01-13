@@ -41,7 +41,7 @@
 
 引用方法
 ------------------------------------
-       compile 'com.github.goEcar:EcarUtil:1.1.0'
+       compile 'com.github.goEcar:EcarWintoneSeria:+'
        
 
        
