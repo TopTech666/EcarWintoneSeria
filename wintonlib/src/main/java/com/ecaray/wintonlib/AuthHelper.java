@@ -92,6 +92,7 @@ public class AuthHelper {
       @return
       ****************************************/
     public void bindAuthService(Activity context,String seriaNumber) {
+        this.seriaNumber= seriaNumber;
         this.context = context;
         if(!TextUtils.isEmpty(seriaNumber)){
             Intent authIntent = new Intent(context, AuthService.class);
