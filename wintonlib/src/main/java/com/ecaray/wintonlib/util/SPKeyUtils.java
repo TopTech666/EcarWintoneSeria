@@ -2,6 +2,8 @@ package com.ecaray.wintonlib.util;
 
 import android.content.Context;
 
+import com.wintone.lisence.WintoneLSCOperateTools;
+
 /**
  * ===============================================
  * <p>
@@ -20,6 +22,7 @@ import android.content.Context;
  * ===============================================
  */
 public class SPKeyUtils {
+
 
     /**
      * 文通识别

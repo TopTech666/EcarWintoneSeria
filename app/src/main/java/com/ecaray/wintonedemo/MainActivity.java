@@ -1,8 +1,11 @@
 package com.ecaray.wintonedemo;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.storage.StorageManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -16,12 +19,19 @@ import com.ecaray.wintonedemo.net.PubDataCenter;
 import com.ecaray.wintonlib.AuthHelper;
 import com.ecaray.wintonlib.util.SPKeyUtils;
 import com.ecaray.wintonlib.util.SPUtils;
+import com.wintone.lisence.WintoneLSCOperateTools;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+
+import static com.ecaray.wintonlib.AuthHelper.getSdPatch;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
 
         ESubscriber<SerialBean> lESubscriber = new ESubscriber<SerialBean>(this) {
             @Override
@@ -77,4 +88,5 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
 }
