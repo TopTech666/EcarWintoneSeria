@@ -193,6 +193,8 @@ public class RecogniteHelper4WT {
                         }
                     }
                 }
+            }  else{
+                onResult.recogFail();
             }
         }
         nRet = -1;
@@ -333,6 +335,8 @@ public class RecogniteHelper4WT {
     }
     public interface OnResult {
         void onGeted(String fileName, String number);  //获取了结果
+        void recogFail();  //识别失败
+
         String saveImage(byte[] data);
     }
 }

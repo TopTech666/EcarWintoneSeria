@@ -47,8 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         ESubscriber<SerialBean> lESubscriber = new ESubscriber<SerialBean>(this) {
             @Override
-            protected void onUserSuccess(SerialBean serialBean) {
-
+            protected void onUserSuccess(SerialBean lSerialBean) {
             }
 
             @Override
@@ -62,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                         String lSerialCode = lSerialBean.serialcode;
                         if (lSerialCode != null && !TextUtils.isEmpty(lSerialCode)) {
                             //获取序列号成功则保存
-                            AuthHelper.getInstance().bindAuthService(MainActivity.this,lSerialBean.serialcode);
+                            AuthHelper.getInstance().bindAuthService(MainActivity.this, lSerialBean.serialcode);
                         }
                     }
                 }
