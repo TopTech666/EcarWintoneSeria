@@ -39,7 +39,7 @@ public class WintonRecogManager {
     RecogniteHelper4WT mRecogHelper;
     public static byte[] recogData;
 
-    private boolean isStop;//是否停止识别  默认识别
+    private  static  boolean isStop;//是否停止识别  默认识别
 
     public void setStop(boolean stop) {
         isStop = stop;
@@ -61,6 +61,7 @@ public class WintonRecogManager {
         if (wintonHelper == null) {
             wintonHelper = new WintonRecogManager();
         }
+        isStop = false;
         return wintonHelper;
     }
 

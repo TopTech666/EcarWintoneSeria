@@ -11,13 +11,10 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
-import com.ecaray.wintonlib.helper.RecogniteHelper4WT;
 import com.ecaray.wintonlib.WintonRecogManager;
-import com.ecaray.wintonlib.util.SPKeyUtils;
+import com.ecaray.wintonlib.helper.RecogniteHelper4WT;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -101,22 +98,16 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
             if (null == mCamera) {
-                mCamera = Camera.open();
                 //文通识别服务绑定
                 wtManager = WintonRecogManager.getInstance();
                 wtManager.bind(CameraActivity.this);
-                try {
-                    mCamera.setPreviewDisplay(mSurfaceHolder);
-                    initCamera();
-                    mCamera.startPreview();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                initCamera(holder);
             }
         }
 
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            initCamera(holder);
         }
     };
 
@@ -131,7 +122,13 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
     /**
      * 相机参数的初始化设置
      */
-    private void initCamera() {
+    private void initCamera(SurfaceHolder mSurfaceHolder) {
+        try {
+            mCamera = Camera.open();
+            mCamera.setPreviewDisplay(mSurfaceHolder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mParameters = mCamera.getParameters();
         mParameters.setPictureFormat(ImageFormat.JPEG);
         mParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
@@ -147,6 +144,8 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
         }
         mCamera.setParameters(mParameters);
         mCamera.setPreviewCallback(this);
+        mCamera.startPreview();
+
     }
 
 

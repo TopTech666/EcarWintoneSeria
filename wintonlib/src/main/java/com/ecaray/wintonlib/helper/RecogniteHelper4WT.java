@@ -171,51 +171,55 @@ public class RecogniteHelper4WT {
      */
     long time;
 
-    public void getResult(Activity activity, String[] fieldValue, byte[] data, OnResult onResult) {
-        if (System.currentTimeMillis() - time < TIME_SPACING) {
-            time = System.currentTimeMillis();
-            return;
-        }
-        nRet = recogBinder.getnRet();
-        if (nRet != 0) {
-            feedbackWrongCode(activity);
-        } else {
-
-            String[] resultString;
-            String boolString;
-            boolString = fieldValue[0];
-
-            String fileName = null;
-            Log.i("carPlate", "识别到的车牌号：" + boolString);
-
-            if (!TextUtils.isEmpty(boolString)) {
-                resultString = boolString.split(";");
-                int length = resultString.length;
-                if (length > 0) {
-                    String[] strArray = fieldValue[4].split(";");
-                    if (Integer.valueOf(strArray[0]) > 75) {
-                        if (data != null) {
-                            fileName = onResult.saveImage(data);
-                        }
-                        if (length == 1) {
-                            if (null != fieldname) {
-                                String number = fieldValue[0];
-                                onResult.onGeted(fileName, number);
-                            }
-                        }
-                    } else {
-                        onResult.recogFail();
-                    }
-                }
-            } else {
-                onResult.recogFail();
+    public synchronized void getResult(Activity activity, String[] fieldValue, byte[] data, OnResult onResult) {
+        synchronized (this) {
+            if (System.currentTimeMillis() - time < TIME_SPACING) {
+                time = System.currentTimeMillis();
+                return;
             }
+            nRet = recogBinder.getnRet();
+            if (nRet != 0) {
+                feedbackWrongCode(activity);
+            } else {
+
+                String[] resultString;
+                String boolString;
+                boolString = fieldValue[0];
+
+                String fileName = null;
+                Log.i("carPlate", "识别到的车牌号：" + boolString);
+
+                if (!TextUtils.isEmpty(boolString)) {
+                    resultString = boolString.split(";");
+                    int length = resultString.length;
+                    if (length > 0) {
+                        String[] strArray = fieldValue[4].split(";");
+                        if (Integer.valueOf(strArray[0]) > 75) {
+                            if (data != null) {
+                                fileName = onResult.saveImage(data);
+                            }
+                            if (length == 1) {
+                                if (null != fieldname) {
+                                    String number = fieldValue[0];
+                                    onResult.onGeted(fileName, number);
+                                }
+                            }
+                        } else {
+                            onResult.recogFail();
+                        }
+                    }
+                } else {
+                    onResult.recogFail();
+                }
+            }
+            nRet = -1;
         }
-        nRet = -1;
     }
 
     private void feedbackWrongCode(Activity context) {
-        if(context==null){return;}
+        if (context == null) {
+            return;
+        }
         String nretString = String.valueOf(nRet);
         switch (nretString) {
             case "-1001":
