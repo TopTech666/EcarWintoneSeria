@@ -5,14 +5,14 @@ android {
     buildToolsVersion '25.0.0'
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
 
         //让32位编译的.so文件能运行在64位的手机上（前提代码支持64位）
         ndk {
-            abiFilters "armeabi", "armeabi-v7a", "x86", "LPR"
+            abiFilters "armeabi", "armeabi-v7a", "x86", "ENCRYP"
         }
 
     }
@@ -59,4 +59,5 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.github.goEcar:EcarEncryption:latest.release'
 }

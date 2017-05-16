@@ -1,10 +1,8 @@
-package com.ecaray.wintonedemo.util;
+package com.ecaray.wintonlib.util;
 
 import android.content.Context;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-
-import com.ecaray.wintonedemo.App;
 
 
 /**
@@ -26,19 +24,25 @@ import com.ecaray.wintonedemo.App;
  */
 public class SysServiceUtils {
 
-    public static String getIMEI(){
+    public static String getIMEI(Context context) {
 
-        String IMEI = ((TelephonyManager) App.getInstance().getSystemService(
+        String IMEI = ((TelephonyManager) context.getSystemService(
                 Context.TELEPHONY_SERVICE)).getDeviceId();
-        if(IMEI != null && !TextUtils.isEmpty(IMEI)){
+        if (!TextUtils.isEmpty(IMEI)) {
+            if (IMEI.length() < 15) {
+                int length = 15 - IMEI.length();
+                for (int i = 0; i < length; i++) {
+                    IMEI = IMEI.concat("0");
+                }
+            }
             return IMEI;
-        }else{
+        } else {
             return "";
         }
     }
 
-    public static String getDeviceName(){
-        String model= android.os.Build.MODEL;
+    public static String getDeviceName() {
+        String model = android.os.Build.MODEL;
         return model.toUpperCase();
     }
 

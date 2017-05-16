@@ -1,9 +1,9 @@
-package com.ecaray.wintonlib;/*
+package com.ecaray.wintonlib.helper;/*
  *===============================================
  *
  * 文件名:${type_name}
  *
- * 描述: 链接验证
+ * 描述: 识别服务
  *
  * 作者:
  *
@@ -28,12 +28,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.hardware.Camera;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.ecaray.wintonlib.R;
 import com.wintone.plateid.PlateCfgParameter;
 import com.wintone.plateid.RecogService;
 
@@ -44,9 +44,8 @@ public class RecogniteHelper4WT {
     public boolean mServiceIsConnected;
     private int iInitPlateIDSDK = -1;
     private int nRet = -1;
-    static private Activity context;
-    static private Camera mCamera;
-    boolean isBinded;
+    public boolean isBinded;
+    public long TIME_SPACING = 200;//时间间隔
 
     int[] fieldname = {R.string.plate_number, R.string.plate_color,
             R.string.plate_color_code, R.string.plate_type_code,
@@ -71,7 +70,7 @@ public class RecogniteHelper4WT {
             if (iInitPlateIDSDK != 0) {
                 nRet = iInitPlateIDSDK;
                 String[] str = {"" + iInitPlateIDSDK};
-                getResult(str, null, null, null);
+                getResult(null, str, null, null);
             }
             PlateCfgParameter cfgparameter = new PlateCfgParameter();
             cfgparameter.armpolice = 4;
@@ -100,34 +99,49 @@ public class RecogniteHelper4WT {
 
     }
 
-    static public RecogniteHelper4WT getInstance(Activity activity, Camera camera) {
+    public boolean isBinded() {
+        return isBinded;
+    }
+
+    /****************************************
+     方法描述：
+     @param  timeSpacing  获取车牌的时间间隔，默认200ms
+     @return
+     ****************************************/
+    static public RecogniteHelper4WT getInstance(long timeSpacing) {
         if (recogHelper == null) {
             recogHelper = new RecogniteHelper4WT();
-            mCamera = camera;
         }
-        context = activity;
         return recogHelper;
     }
+
+    static public RecogniteHelper4WT getInstance() {
+        if (recogHelper == null) {
+            recogHelper = new RecogniteHelper4WT();
+        }
+        return recogHelper;
+    }
+
 
     /**
      * 绑定服务，相机开启时绑定
      */
-    public RecogniteHelper4WT bindRecogService() {
+    public RecogniteHelper4WT bindRecogService(Activity activity) {
         if (!isBinded) {
-            Intent authIntent = new Intent(context, RecogService.class);
-            context.bindService(authIntent, recogConn, Service.BIND_AUTO_CREATE);
+            Intent authIntent = new Intent(activity, RecogService.class);
+            activity.bindService(authIntent, recogConn, Service.BIND_AUTO_CREATE);
             isBinded = true;
         }
         return this;
     }
 
     /**
-     *  解绑服务  必须退出页面的时候调用
+     * 解绑服务  必须退出页面的时候调用
      */
-    public void unbindService() {
+    public void unbindService(Activity activity) {
         if (recogBinder != null) {
             try {
-                context.unbindService(recogConn);
+                activity.unbindService(recogConn);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -155,26 +169,26 @@ public class RecogniteHelper4WT {
     /**
      * 回调数据
      */
-    public void getResult(String[] fieldValue, Camera camera, byte[] data, OnResult onResult) {
-        if (mCamera != camera) {
-            mCamera = camera;
+    long time;
+
+    public void getResult(Activity activity, String[] fieldValue, byte[] data, OnResult onResult) {
+        if (System.currentTimeMillis() - time < TIME_SPACING) {
+            time = System.currentTimeMillis();
+            return;
         }
         nRet = recogBinder.getnRet();
         if (nRet != 0) {
-            feedbackWrongCode();
+            feedbackWrongCode(activity);
         } else {
 
             String[] resultString;
             String boolString;
-
-
             boolString = fieldValue[0];
 
             String fileName = null;
             Log.i("carPlate", "识别到的车牌号：" + boolString);
 
             if (!TextUtils.isEmpty(boolString)) {
-
                 resultString = boolString.split(";");
                 int length = resultString.length;
                 if (length > 0) {
@@ -183,24 +197,25 @@ public class RecogniteHelper4WT {
                         if (data != null) {
                             fileName = onResult.saveImage(data);
                         }
-                        camera.stopPreview();
-                        camera.setPreviewCallback(null);
                         if (length == 1) {
                             if (null != fieldname) {
                                 String number = fieldValue[0];
                                 onResult.onGeted(fileName, number);
                             }
                         }
+                    } else {
+                        onResult.recogFail();
                     }
                 }
-            }  else{
+            } else {
                 onResult.recogFail();
             }
         }
         nRet = -1;
     }
 
-    private void feedbackWrongCode() {
+    private void feedbackWrongCode(Activity context) {
+        if(context==null){return;}
         String nretString = String.valueOf(nRet);
         switch (nretString) {
             case "-1001":
@@ -319,22 +334,23 @@ public class RecogniteHelper4WT {
                 break;
             default:
                 showShort(context, context.getString(R.string.recognize_result) + nRet + "\n");
-
                 break;
         }
     }
+
     public static boolean isShowMessage = true;
 
     /**
      * 短时间显示Toast
      */
-    public static void showShort(Context context, String message)
-    {
+    public static void showShort(Context context, String message) {
         if (isShowMessage)
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
+
     public interface OnResult {
         void onGeted(String fileName, String number);  //获取了结果
+
         void recogFail();  //识别失败
 
         String saveImage(byte[] data);

@@ -1,6 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
-apply plugin: 'android-apt'
 
 android {
     compileSdkVersion 24
@@ -12,7 +10,9 @@ android {
         targetSdkVersion 19
         versionCode 1
         versionName "1.0"
-
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86", "ENCRYP"
+        }
 //        jackOptions {
 //            enabled true
 //        }
@@ -26,8 +26,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 
     sourceSets {
@@ -43,12 +43,14 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:24.0.0'
     //亿车网络框架
-    compile 'com.github.goEcar:EcarNetFream:1.2.6'
+    //    compile 'com.github.goEcar:EcarNetFream:1.2.6'
     //亿车工具类
-    compile 'com.github.goEcar:EcarUtil:1.1.0'
+    //    compile 'com.github.goEcar:EcarUtil:1.1.0'
     //文通库
     //butterKnife
     compile 'com.jakewharton:butterknife:7.0.1'
     //    compile 'com.github.goEcar:EcarWintoneTFcard:1.0.0'
+    provided 'com.github.goEcar:EcarEncryption:latest.release'
+
     compile project(':wintonlib')
 }

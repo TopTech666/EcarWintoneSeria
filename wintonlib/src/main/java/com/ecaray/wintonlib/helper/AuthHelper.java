@@ -1,4 +1,4 @@
-package com.ecaray.wintonlib;/*
+package com.ecaray.wintonlib.helper;/*
  *===============================================
  *
  * 文件名:${type_name}
@@ -29,7 +29,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Environment;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.storage.StorageManager;
 import android.text.TextUtils;
 
@@ -46,7 +45,7 @@ import java.lang.reflect.Method;
 public class AuthHelper {
     private static AuthHelper authHelper;
     private Activity context;
-    private String seriaNumber = "";
+    public static String seriaNumber = "";
 
 
     public ServiceConnection authConn = new ServiceConnection() {
@@ -120,6 +119,7 @@ public class AuthHelper {
         }
     }
 
+    @SuppressWarnings("WrongConstant")
     private static String getCanUsePatch(Activity activity) {
         StorageManager mStorageManager = (StorageManager) activity.getSystemService("storage");
         Method method = null;
@@ -133,7 +133,7 @@ public class AuthHelper {
         String[] paths = null;
 
         try {
-            paths = (String[]) ((String[]) method.invoke(mStorageManager, new Object[0]));
+            paths = ((String[]) method.invoke(mStorageManager, new Object[0]));
         } catch (IllegalArgumentException var5) {
             var5.printStackTrace();
         } catch (IllegalAccessException var6) {
