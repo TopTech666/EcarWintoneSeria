@@ -23,6 +23,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.TreeMap;
 
+import static android.R.attr.height;
+import static android.R.attr.width;
 import static com.ecaray.wintonlib.net.NetUtil.paserJson;
 
 
@@ -116,10 +118,10 @@ public class WintonRecogManager {
      * @param data 字节数组(图片)
      */
     //识别帮助类
-    public void useWTRecognition(Activity activity,
-                                 byte[] data,
-                                 RecogniteHelper4WT.OnResult geted,
-                                 int preWidth, int preHeight) {
+    public void useWTRecognitionByData(Activity activity,
+                                       byte[] data,
+                                       RecogniteHelper4WT.OnResult geted,
+                                       int preWidth, int preHeight) {
         if (isStop) {
             return;
         }
@@ -157,6 +159,50 @@ public class WintonRecogManager {
                     mRecogHelper.getResult(activity, str, data, geted);
                 } else {
                     mRecogHelper.getResult(activity, mFieldValue, data, geted);
+                }
+            }
+        }
+    }
+    /**
+     * 文通识别
+     *
+     * @param path    图片路径
+     */
+    //识别帮助类
+    public void useWTRecognitionByPic(Activity activity,
+                                      String path,
+                                      RecogniteHelper4WT.OnResult geted,
+                                      int preWidth, int preHeight) {
+        if (isStop) {
+            return;
+        }
+        int nRet = -1;
+
+        if (mRecogHelper.isServiceIsConnected() &&! TextUtils.isEmpty(path)) {
+            nRet = mRecogHelper.getRecogBinder() != null ? mRecogHelper.getRecogBinder().getnRet() : nRet;
+
+            int initPlateIDSDK = mRecogHelper.getInitPlateIDSDK();
+            if (initPlateIDSDK == 0) {
+
+
+                PlateRecognitionParameter prp = new PlateRecognitionParameter();
+                prp.height = preHeight;// 图像高度
+                prp.width = preWidth;// 图像宽度
+                prp.pic = path;// 图像文件
+                prp.devCode = "";
+
+
+                //识别开始
+                RecogService.MyBinder lBinder = mRecogHelper.getRecogBinder();
+                String[] mFieldValue = lBinder.doRecogDetail(prp);
+                nRet = lBinder.getnRet();
+                System.out.println("图像宽高"+preHeight+"    "+preWidth);
+
+                if (nRet != 0) {
+                    String[] str = {"" + nRet};
+                    mRecogHelper.getResult(activity, str, null, geted);
+                } else {
+                    mRecogHelper.getResult(activity, mFieldValue, null, geted);
                 }
             }
         }

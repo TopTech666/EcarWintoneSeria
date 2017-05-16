@@ -87,7 +87,7 @@ public class RecogniteHelper4WT {
             cfgparameter.onlytworowyellow = 11;
             cfgparameter.tractor = 8;
             cfgparameter.bIsNight = 1;
-            int lImageformat = 6;
+            int lImageformat = 1;
             int lBVertFlip = 0;
             int lBDwordAligned = 1;
             recogBinder.setRecogArgu(cfgparameter, lImageformat, lBVertFlip, lBDwordAligned);

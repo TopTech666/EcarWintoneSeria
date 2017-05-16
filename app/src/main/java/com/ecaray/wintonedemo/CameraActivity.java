@@ -115,7 +115,7 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
     public void onPreviewFrame(byte[] data, Camera camera) {
 
         //判断是否为拍照，IsAction为true则说明是拍照，则停止预览
-        wtManager.useWTRecognition(this, data, new Geted(), mPreWidth, mPreHeight);
+        wtManager.useWTRecognitionByData(this, data, new Geted(), mPreWidth, mPreHeight);
     }
 
 
