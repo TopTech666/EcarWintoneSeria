@@ -4,9 +4,6 @@ import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.ecar.encryption.Epark.EparkEncrypUtil;
-import com.ecar.factory.EncryptionUtilFactory;
-import com.ecar.util.CastStringUtil;
 import com.ecaray.wintonlib.helper.AuthHelper;
 import com.ecaray.wintonlib.helper.RecogniteHelper4WT;
 import com.ecaray.wintonlib.net.NetUtil;
@@ -14,18 +11,6 @@ import com.ecaray.wintonlib.util.SPKeyUtils;
 import com.ecaray.wintonlib.util.SysServiceUtils;
 import com.wintone.plateid.PlateRecognitionParameter;
 import com.wintone.plateid.RecogService;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.TreeMap;
-
-import static android.R.attr.height;
-import static android.R.attr.width;
-import static com.ecaray.wintonlib.net.NetUtil.paserJson;
 
 
 /*************************************
@@ -38,18 +23,26 @@ import static com.ecaray.wintonlib.net.NetUtil.paserJson;
 public class WintonRecogManager {
 
     static WintonRecogManager wintonHelper;
-    RecogniteHelper4WT mRecogHelper;
-    public static byte[] recogData;
+    static RecogniteHelper4WT mRecogHelper;
 
-    private  static  boolean isStop;//是否停止识别  默认识别
+    private static boolean isStop;//是否停止识别  默认识别
+
+    static long time;
+
+    private static long RECOG_SPACING = 200;//识别过滤间隔  单位ms
+
+    public void setRecogSpacing(long RECOG_SPACING) {
+        this.RECOG_SPACING = RECOG_SPACING;
+    }
 
     public void setStop(boolean stop) {
         isStop = stop;
     }
 
-    //服务是否绑定
-    public boolean isRecServiceBinded() {
-        return mRecogHelper.isBinded();
+
+    //服务是否连接
+    public boolean isServiceIsConnected() {
+        return mRecogHelper.isServiceIsConnected();
     }
 
     private WintonRecogManager() {
@@ -67,7 +60,8 @@ public class WintonRecogManager {
         return wintonHelper;
     }
 
-    public void auth(final Activity context, boolean isNeedWintone) {
+
+    public void authInit(final Activity context, boolean isNeedWintone) {
         if (!isNeedWintone) {
             return;
         } else {
@@ -84,8 +78,8 @@ public class WintonRecogManager {
             public void run() {
                 NetUtil.getSerialNum(SysServiceUtils.getIMEI(context), new NetUtil.Request() {
                     @Override
-                    public void onResult(String result) {
-                        AuthHelper.seriaNumber = result;
+                    public void onResult(String serial) {
+                        AuthHelper.seriaNumber = serial;
                         if (!TextUtils.isEmpty(AuthHelper.seriaNumber)) {
                             AuthHelper.getInstance().bindAuthService(context, AuthHelper.seriaNumber);
                         } else {
@@ -93,7 +87,6 @@ public class WintonRecogManager {
                         }
                     }
                 });
-//                String jsonStr = getSerialNum();
 
             }
         }).start();
@@ -101,13 +94,13 @@ public class WintonRecogManager {
     }
 
 
-    public void bind(Activity activity) {
-        if (!isRecServiceBinded())
-            mRecogHelper.bindRecogService(activity);
+    public void bindRecogService(Activity activity) {
+        mRecogHelper.bindDataRecogService(activity);
     }
 
     public void unBind(Activity activity, boolean isWintone) {
-        if (isWintone && isRecServiceBinded())
+        isStop = true;
+        if (isWintone)
             mRecogHelper.unbindService(activity);
     }
 
@@ -122,26 +115,28 @@ public class WintonRecogManager {
                                        byte[] data,
                                        RecogniteHelper4WT.OnResult geted,
                                        int preWidth, int preHeight) {
-        if (isStop) {
+        if ((System.currentTimeMillis() - time) < RECOG_SPACING || isStop) {
+            geted.recogFail();
             return;
         }
-        int nRet = -1;
 
+        RecogService.initializeType = true;  // 记录进入此界面时是拍照识别还是视频识别   	 true:视频识别 		false:拍照识别
+        time = System.currentTimeMillis();
+
+        int nRet = -1;
         if (mRecogHelper.isServiceIsConnected() && data != null) {
-            recogData = data;
             nRet = mRecogHelper.getRecogBinder() != null ? mRecogHelper.getRecogBinder().getnRet() : nRet;
 
             int initPlateIDSDK = mRecogHelper.getInitPlateIDSDK();
             if (initPlateIDSDK == 0) {
-
                 //识别参数设置
                 PlateRecognitionParameter mPlateRecParam = new PlateRecognitionParameter();
-                mPlateRecParam.picByte = data;
-                mPlateRecParam.devCode = "";
 
-                //设置识别区域
+                //设置识别区域--三个参数的赋值顺序一定要保证！
                 mPlateRecParam.height = preHeight;
                 mPlateRecParam.width = preWidth;
+                mPlateRecParam.picByte = data;
+
                 //初始化参数
                 mPlateRecParam.plateIDCfg.bRotate = 1;
                 mPlateRecParam.plateIDCfg.left = 0;
@@ -149,7 +144,6 @@ public class WintonRecogManager {
                 mPlateRecParam.plateIDCfg.top = 0;
                 mPlateRecParam.plateIDCfg.bottom = 0;
 
-                Log.d("code", mPlateRecParam.devCode);
 
                 //识别开始
                 RecogService.MyBinder lBinder = mRecogHelper.getRecogBinder();
@@ -161,12 +155,15 @@ public class WintonRecogManager {
                     mRecogHelper.getResult(activity, mFieldValue, data, geted);
                 }
             }
+        } else {
+            geted.recogFail();
         }
     }
+
     /**
      * 文通识别
      *
-     * @param path    图片路径
+     * @param path 图片路径
      */
     //识别帮助类
     public void useWTRecognitionByPic(Activity activity,
@@ -176,9 +173,11 @@ public class WintonRecogManager {
         if (isStop) {
             return;
         }
+        bindRecogService(activity);
         int nRet = -1;
+        RecogService.initializeType = false;  // 记录进入此界面时是拍照识别还是视频识别   	 true:视频识别 		false:拍照识别
 
-        if (mRecogHelper.isServiceIsConnected() &&! TextUtils.isEmpty(path)) {
+        if (mRecogHelper.isServiceIsConnected() && !TextUtils.isEmpty(path)) {
             nRet = mRecogHelper.getRecogBinder() != null ? mRecogHelper.getRecogBinder().getnRet() : nRet;
 
             int initPlateIDSDK = mRecogHelper.getInitPlateIDSDK();
@@ -196,7 +195,7 @@ public class WintonRecogManager {
                 RecogService.MyBinder lBinder = mRecogHelper.getRecogBinder();
                 String[] mFieldValue = lBinder.doRecogDetail(prp);
                 nRet = lBinder.getnRet();
-                System.out.println("图像宽高"+preHeight+"    "+preWidth);
+                System.out.println("图像宽高" + preHeight + "    " + preWidth);
 
                 if (nRet != 0) {
                     String[] str = {"" + nRet};

@@ -51,6 +51,7 @@ public class AuthHelper {
     public ServiceConnection authConn = new ServiceConnection() {
         @Override
         public void onServiceDisconnected(ComponentName name) {
+
             authConn = null;
         }
 

@@ -37,6 +37,8 @@ import com.ecaray.wintonlib.R;
 import com.wintone.plateid.PlateCfgParameter;
 import com.wintone.plateid.RecogService;
 
+import static android.content.Context.BIND_AUTO_CREATE;
+
 
 public class RecogniteHelper4WT {
     private static RecogniteHelper4WT recogHelper;
@@ -44,8 +46,6 @@ public class RecogniteHelper4WT {
     public boolean mServiceIsConnected;
     private int iInitPlateIDSDK = -1;
     private int nRet = -1;
-    public boolean isBinded;
-    public long TIME_SPACING = 200;//时间间隔
 
     int[] fieldname = {R.string.plate_number, R.string.plate_color,
             R.string.plate_color_code, R.string.plate_type_code,
@@ -56,14 +56,17 @@ public class RecogniteHelper4WT {
             R.string.plate_light, R.string.plate_car_color};
 
     public ServiceConnection recogConn = new ServiceConnection() {
+
+
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            mServiceIsConnected = false;
             recogConn = null;
         }
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d("tagutil", "ServiceConnection   onServiceConnected: ");
             mServiceIsConnected = true;
             recogBinder = (RecogService.MyBinder) service;
             iInitPlateIDSDK = recogBinder.getInitPlateIDSDK();
@@ -72,7 +75,16 @@ public class RecogniteHelper4WT {
                 String[] str = {"" + iInitPlateIDSDK};
                 getResult(null, str, null, null);
             }
-            PlateCfgParameter cfgparameter = new PlateCfgParameter();
+            setConfig();
+        }
+    };
+    private PlateCfgParameter cfgparameter;
+
+    private void setConfig() {
+        if (recogBinder != null) {
+            if (cfgparameter == null) {
+                cfgparameter = new PlateCfgParameter();
+            }
             cfgparameter.armpolice = 4;
             cfgparameter.armpolice2 = 16;
             cfgparameter.embassy = 12;
@@ -87,33 +99,19 @@ public class RecogniteHelper4WT {
             cfgparameter.onlytworowyellow = 11;
             cfgparameter.tractor = 8;
             cfgparameter.bIsNight = 1;
-            int lImageformat = 1;
             int lBVertFlip = 0;
             int lBDwordAligned = 1;
             recogBinder.setRecogArgu(cfgparameter, lImageformat, lBVertFlip, lBDwordAligned);
         }
-    };
+
+    }
+
+    private int lImageformat = 6;     //1 图片识别 6视频识别
 
     private RecogniteHelper4WT() {
         mServiceIsConnected = false;
-
     }
 
-    public boolean isBinded() {
-        return isBinded;
-    }
-
-    /****************************************
-     方法描述：
-     @param  timeSpacing  获取车牌的时间间隔，默认200ms
-     @return
-     ****************************************/
-    static public RecogniteHelper4WT getInstance(long timeSpacing) {
-        if (recogHelper == null) {
-            recogHelper = new RecogniteHelper4WT();
-        }
-        return recogHelper;
-    }
 
     static public RecogniteHelper4WT getInstance() {
         if (recogHelper == null) {
@@ -124,13 +122,30 @@ public class RecogniteHelper4WT {
 
 
     /**
-     * 绑定服务，相机开启时绑定
+     * 绑定视频服务，相机开启时绑定
      */
-    public RecogniteHelper4WT bindRecogService(Activity activity) {
-        if (!isBinded) {
+    public RecogniteHelper4WT bindDataRecogService(Activity activity) {
+        lImageformat = 6;
+        if (!mServiceIsConnected) {
             Intent authIntent = new Intent(activity, RecogService.class);
-            activity.bindService(authIntent, recogConn, Service.BIND_AUTO_CREATE);
-            isBinded = true;
+            activity.bindService(authIntent, recogConn, BIND_AUTO_CREATE);
+            mServiceIsConnected = true;
+//            setConfig();
+        }
+
+        return this;
+    }
+
+    /**
+     * 绑定图片识别服务，相机开启时绑定
+     */
+    public RecogniteHelper4WT bindPicRecogService(Activity activity) {
+        lImageformat = 1;
+        if (!mServiceIsConnected) {
+            Intent authIntent = new Intent(activity, RecogService.class);
+            activity.bindService(authIntent, recogConn, BIND_AUTO_CREATE);
+            mServiceIsConnected = true;
+//            setConfig();
         }
         return this;
     }
@@ -139,20 +154,22 @@ public class RecogniteHelper4WT {
      * 解绑服务  必须退出页面的时候调用
      */
     public void unbindService(Activity activity) {
+
         if (recogBinder != null) {
             try {
                 activity.unbindService(recogConn);
-
+                mServiceIsConnected = false;
+                recogBinder = null;
             } catch (Exception e) {
+                mServiceIsConnected = true;
                 e.printStackTrace();
             }
         }
-        isBinded = false;
-
     }
 
     public int getInitPlateIDSDK() {
-        return iInitPlateIDSDK;
+
+        return recogBinder == null ? -1 : iInitPlateIDSDK;
     }
 
     /**
@@ -169,51 +186,47 @@ public class RecogniteHelper4WT {
     /**
      * 回调数据
      */
-    long time;
 
-    public synchronized void getResult(Activity activity, String[] fieldValue, byte[] data, OnResult onResult) {
-        synchronized (this) {
-            if (System.currentTimeMillis() - time < TIME_SPACING) {
-                time = System.currentTimeMillis();
-                return;
-            }
-            nRet = recogBinder.getnRet();
-            if (nRet != 0) {
-                feedbackWrongCode(activity);
-            } else {
-
-                String[] resultString;
-                String boolString;
-                boolString = fieldValue[0];
-
-                String fileName = null;
-                Log.i("carPlate", "识别到的车牌号：" + boolString);
-
-                if (!TextUtils.isEmpty(boolString)) {
-                    resultString = boolString.split(";");
-                    int length = resultString.length;
-                    if (length > 0) {
-                        String[] strArray = fieldValue[4].split(";");
-                        if (Integer.valueOf(strArray[0]) > 75) {
-                            if (data != null) {
-                                fileName = onResult.saveImage(data);
-                            }
-                            if (length == 1) {
-                                if (null != fieldname) {
-                                    String number = fieldValue[0];
-                                    onResult.onGeted(fileName, number);
-                                }
-                            }
-                        } else {
-                            onResult.recogFail();
-                        }
-                    }
-                } else {
-                    onResult.recogFail();
-                }
-            }
-            nRet = -1;
+    public void getResult(Activity activity, String[] fieldValue, byte[] data, OnResult onResult) {
+        if (recogBinder == null) {
+            return;
         }
+        nRet = recogBinder.getnRet();
+        if (nRet != 0) {
+            feedbackWrongCode(activity);
+        } else {
+
+            String[] resultString;
+            String boolString;
+            boolString = fieldValue[0];
+
+            String fileName = null;
+            Log.i("carPlate", "识别到的车牌号：" + boolString);
+
+            if (!TextUtils.isEmpty(boolString)) {
+                resultString = boolString.split(";");
+                int length = resultString.length;
+                if (length > 0) {
+                    String[] strArray = fieldValue[4].split(";");
+                    if (Integer.valueOf(strArray[0]) > 75) {
+                        if (data != null) {
+                            fileName = onResult.saveImage(data);
+                        }
+                        if (length == 1) {
+                            if (null != fieldname) {
+                                String number = fieldValue[0];
+                                onResult.onGeted(fileName, number);
+                            }
+                        }
+                    } else {
+                        onResult.recogFail();
+                    }
+                }
+            } else {
+                onResult.recogFail();
+            }
+        }
+        nRet = -1;
     }
 
     private void feedbackWrongCode(Activity context) {

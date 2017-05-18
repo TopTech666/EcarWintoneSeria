@@ -1,5 +1,6 @@
 package com.ecaray.wintonlib.net;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.ecar.encryption.Epark.EparkEncrypUtil;
@@ -57,7 +58,7 @@ public class NetUtil {
         urlStr = urlStr.replaceAll(",", "&");
         urlStr = urlStr.replaceAll(" ", "");
 
-        urlStr = "http://tra.parkbees.com/system/data?&" + urlStr;
+        urlStr = "http://tra.parkbees.com/system/data?&".concat(urlStr);
         Log.d("tagutil", "urlStr: " + urlStr);
 //        String urlStr = "http://tra.parkbees.com/system/data?&devicecode=" + imei +
 //                "&method=getSerialCode&module=plo&service=SerialCode&sign=" +
@@ -80,7 +81,7 @@ public class NetUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        request.onResult(result);
+        request.onResult(paserJson(result, "serialcode"));
     }
 
     public static String paserJson(String jsonStr, String key) {

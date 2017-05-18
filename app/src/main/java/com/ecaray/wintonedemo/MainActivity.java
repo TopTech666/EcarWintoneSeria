@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        WintonRecogManager.getInstance().auth(this, true);
+        WintonRecogManager.getInstance().authInit(this, true);
         mRecCarPlate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

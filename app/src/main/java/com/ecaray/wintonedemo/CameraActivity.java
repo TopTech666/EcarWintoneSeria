@@ -1,6 +1,7 @@
 package com.ecaray.wintonedemo;
 
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
@@ -51,12 +52,11 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
     private Camera mCamera;
     private Camera.Parameters mParameters;
 
-    //0代表前置摄像头，1代表后置摄像头
-    private int mCameraPosition = 1;
     //车牌号码
     private String mCarPlate;
     //识别帮助类
     public WintonRecogManager wtManager;
+    Geted geted;
 
 
     @Override
@@ -74,6 +74,8 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
         mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         mSurfaceHolder.setKeepScreenOn(true);
         mSurfaceHolder.addCallback(mCallback);
+        geted = new Geted();
+        wtManager = WintonRecogManager.getInstance();
     }
 
     public void initView() {
@@ -99,23 +101,22 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
         public void surfaceCreated(SurfaceHolder holder) {
             if (null == mCamera) {
                 //文通识别服务绑定
-                wtManager = WintonRecogManager.getInstance();
-                wtManager.bind(CameraActivity.this);
                 initCamera(holder);
             }
         }
 
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            initCamera(holder);
+            Log.d("tagutil", "surfaceChanged: ");
         }
     };
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-
+        wtManager.bindRecogService(CameraActivity.this);
         //判断是否为拍照，IsAction为true则说明是拍照，则停止预览
         wtManager.useWTRecognitionByData(this, data, new Geted(), mPreWidth, mPreHeight);
+
     }
 
 
@@ -143,10 +144,26 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
             mParameters.setRotation(90);
         }
         mCamera.setParameters(mParameters);
-        mCamera.setPreviewCallback(this);
+        mCamera.setOneShotPreviewCallback(this);
         mCamera.startPreview();
+        mCamera.autoFocus(fbCallBack);
 
     }
+
+    Camera.AutoFocusCallback fbCallBack = new Camera.AutoFocusCallback() {
+        @Override
+        public void onAutoFocus(boolean b, Camera camera) {
+            Log.d("tagutil", "onAutoFocus: ");
+            mCamera.setOneShotPreviewCallback(CameraActivity.this);
+            sv_camera.postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    mCamera.autoFocus(fbCallBack);
+                }
+            }, 300);
+        }
+    };
 
 
     /**
@@ -196,7 +213,6 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
 
         @Override
         public void recogFail() {
-
         }
 
         @Override
@@ -274,5 +290,6 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
     protected void onDestroy() {
         super.onDestroy();
         wtManager.unBind(CameraActivity.this, true);
+
     }
 }
