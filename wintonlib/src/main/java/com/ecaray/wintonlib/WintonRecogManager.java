@@ -66,7 +66,7 @@ public class WintonRecogManager {
 
     private void showToast(Context context, String message) {
         if (toast == null) {
-            toast = Toast.makeText(context,message,Toast.LENGTH_SHORT);
+            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
         }
         toast.setText(message);
         toast.show();
@@ -167,11 +167,8 @@ public class WintonRecogManager {
                     mRecogHelper.getResult(activity, mFieldValue, data, geted);
                 }
             } else {
-                showToast(activity, "权限获取失败！");
+                showToast(activity, "正在获取权限...");
             }
-        } else {
-            geted.recogFail();
-            showToast(activity, "权限获取失败！");
         }
     }
 
