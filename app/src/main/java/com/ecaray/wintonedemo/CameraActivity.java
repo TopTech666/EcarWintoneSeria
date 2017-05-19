@@ -159,7 +159,9 @@ public class CameraActivity extends Activity implements Camera.PreviewCallback {
 
                 @Override
                 public void run() {
-                    mCamera.autoFocus(fbCallBack);
+                    if (mCamera != null) {
+                        mCamera.autoFocus(fbCallBack);
+                    }
                 }
             }, 300);
         }

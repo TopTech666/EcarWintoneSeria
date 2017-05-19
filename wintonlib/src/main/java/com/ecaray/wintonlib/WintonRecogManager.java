@@ -1,8 +1,10 @@
 package com.ecaray.wintonlib;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.ecaray.wintonlib.helper.AuthHelper;
 import com.ecaray.wintonlib.helper.RecogniteHelper4WT;
@@ -58,6 +60,16 @@ public class WintonRecogManager {
         }
         isStop = false;
         return wintonHelper;
+    }
+
+    Toast toast;
+
+    private void showToast(Context context, String message) {
+        if (toast == null) {
+            toast = Toast.makeText(context,message,Toast.LENGTH_SHORT);
+        }
+        toast.setText(message);
+        toast.show();
     }
 
 
@@ -154,9 +166,12 @@ public class WintonRecogManager {
                 } else {
                     mRecogHelper.getResult(activity, mFieldValue, data, geted);
                 }
+            } else {
+                showToast(activity, "权限获取失败！");
             }
         } else {
             geted.recogFail();
+            showToast(activity, "权限获取失败！");
         }
     }
 
