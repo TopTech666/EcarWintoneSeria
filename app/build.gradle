@@ -51,7 +51,6 @@ dependencies {
     //butterKnife
     compile 'com.jakewharton:butterknife:7.0.1'
     //    compile 'com.github.goEcar:EcarWintoneTFcard:1.0.0'
-    provided 'com.github.goEcar:EcarEncryption:latest.release'
 
     compile project(':wintonlib')
 }

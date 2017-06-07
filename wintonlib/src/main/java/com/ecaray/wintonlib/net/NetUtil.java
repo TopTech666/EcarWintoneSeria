@@ -39,7 +39,7 @@ public class NetUtil {
 
     public static EparkEncrypUtil eUtil = EncryptionUtilFactory.getDefault(true).createEpark();
 
-    protected static String getSecurityMapKeys(String tMap, boolean encode, boolean isSign, boolean isNeedVe) {
+    protected static String getSecurityMapKeys(TreeMap tMap, boolean encode, boolean isSign, boolean isNeedVe) {
         return eUtil.getSecurityMapKeys(tMap, encode, isSign, isNeedVe, "", eUtil.binstrToStr(REQUEST_KEY));
     }
 
@@ -52,7 +52,7 @@ public class NetUtil {
         tMap.put("method", "getSerialCode");
         tMap.put("module", "plo");
         tMap.put("service", "SerialCode");
-        String urlStr = getSecurityMapKeys(tMap.toString(), false, true, true).toString();
+        String urlStr = getSecurityMapKeys(tMap, false, true, true).toString();
         urlStr = urlStr.replaceAll("\\{", "");
         urlStr = urlStr.replaceAll("\\}", "");
         urlStr = urlStr.replaceAll(",", "&");
